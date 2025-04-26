@@ -9,7 +9,6 @@ use App\Dto\Betting\BetResponse;
 use App\Exception\Betting\BettingException;
 use App\Repository\UsersRepository;
 use App\Service\BettingService;
-use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;

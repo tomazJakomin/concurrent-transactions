@@ -13,3 +13,16 @@ with [FrankenPHP](https://frankenphp.dev) and [Caddy](https://caddyserver.com/) 
 4. Open `https://localhost` in your favorite web browser and [accept the auto-generated TLS certificate](https://stackoverflow.com/a/15076602/1352334)
 5. Run `docker compose down --remove-orphans` to stop the Docker containers.
 
+
+
+## Concurrent transaction
+
+I have implemented locking mechanism on user table before updating 
+the balance and creating new transaction.
+I did implement locking only on Users table since I lock
+specific users row based on id and then when I have that lock
+I can ensure no one is updating that user and related transaction.
+
+### Added retry mechanism
+
+There is a while loop to retry locking if the resource is being locked already.
