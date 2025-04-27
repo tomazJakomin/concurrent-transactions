@@ -94,7 +94,7 @@ class BettingService
 			} catch (DomainException $e) {
 				$this->entityManager->rollback();
 				$this->logger->warning(
-					sprintf('Could not acquire lock for user %d immediately. Waiting...', $betRequest->getUserId())
+					sprintf("Issue when updating user balance for user %d. Error: %s", $betRequest->getUserId(), $e->getMessage())
 				);
 				throw new BettingException($e->getMessage(), 0, $e);
 			} catch (BettingException $e) {
@@ -118,7 +118,6 @@ class BettingService
 	 */
 	private function checkIfTransactionExists(string $transactionId): void
 	{
-		// Check if the transaction ID already exists
 		$transaction = $this->transactionsRepository
 			->findOneBy(['transactionId' => $transactionId]);
 
