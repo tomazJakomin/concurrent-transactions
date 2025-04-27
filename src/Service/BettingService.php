@@ -12,7 +12,7 @@ use App\Repository\TransactionsRepository;
 use App\Repository\UsersRepository;
 use Doctrine\DBAL\LockMode;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\PessimisticLockException;
+use DomainException;
 use Exception;
 use Psr\Log\LoggerInterface;
 
@@ -53,10 +53,14 @@ class BettingService
 				// Attempt to retrieve the user with a pessimistic write lock
 				$user = $this->usersRepository
 					->find($betRequest->getUserId(), LockMode::PESSIMISTIC_WRITE);
+
 				if ($user) {
 					$lockAcquired = true;
 
 					$user->deductBalance(number_format($betRequest->getBetAmount(), 2));
+
+					// added to simulate long running process
+					sleep(5);
 					$this->entityManager->persist($user);
 
 					// recheck if the transaction was not persisted before user locked
@@ -66,6 +70,7 @@ class BettingService
 
 					$this->entityManager->persist($newTransaction);
 					$this->entityManager->flush();
+
 					$this->entityManager->commit();
 
 					$this->logger->info(
@@ -81,32 +86,25 @@ class BettingService
 
 				$this->entityManager->rollback();
 
-				throw new BettingException("Could not acquire lock for user {$betRequest->getUserId()}");
-			} catch (PessimisticLockException $e) {
+				throw new BettingException("User not found {$betRequest->getUserId()}");
+			} catch (DuplicatedTransactionException $e) {
+				throw new BettingException(
+					$e->getMessage(), 0, $e
+				);
+			} catch (DomainException $e) {
+				$this->entityManager->rollback();
+				$this->logger->warning(
+					sprintf('Could not acquire lock for user %d immediately. Waiting...', $betRequest->getUserId())
+				);
+				throw new BettingException($e->getMessage(), 0, $e);
+			} catch (BettingException $e) {
+				throw $e;
+			} catch (Exception $e) {
 				$this->entityManager->rollback();
 				$this->logger->warning(
 					sprintf('Could not acquire lock for user %d immediately. Waiting...', $betRequest->getUserId())
 				);
 				usleep($lockCheckIntervalMicroseconds);
-			} catch (DuplicatedTransactionException $e) {
-				throw new BettingException(
-					$e->getMessage(), 0, $e
-				);
-			} catch (BettingException $e) {
-				throw $e;
-			} catch (Exception $e) {
-				$this->entityManager->rollback();
-				$this->logger->error(
-					sprintf(
-						'Error processing bet transaction with ID "%s": %s',
-						$betRequest->getTransactionId(),
-						$e->getMessage()
-					)
-				);
-
-				throw new BettingException(
-					"Error processing bet transaction with ID {$betRequest->getTransactionId()}", 0, $e
-				);
 			}
 		}
 

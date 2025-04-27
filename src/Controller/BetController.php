@@ -18,7 +18,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 final class BetController extends AbstractController
 {
 
-	private const DEFAULT_LOCK_WAIT_SECONDS = 10;
+	private const DEFAULT_LOCK_WAIT_SECONDS = 20;
 
 	private const DEFAULT_LOCK_CHECK_INTERVAL_MICROSECONDS = 100000;
 

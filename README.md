@@ -9,7 +9,7 @@ with [FrankenPHP](https://frankenphp.dev) and [Caddy](https://caddyserver.com/) 
 
 1. If not already done, [install Docker Compose](https://docs.docker.com/compose/install/) (v2.10+)
 2. Run `docker compose build --no-cache` to build fresh images
-3. Run `docker compose up --pull always -d --wait` to set up and start a fresh Symfony project
+3. Run `docker compose up -d` to set up and start a fresh Symfony project
 4. Open `https://localhost` in your favorite web browser and [accept the auto-generated TLS certificate](https://stackoverflow.com/a/15076602/1352334)
 5. Run `docker compose down --remove-orphans` to stop the Docker containers.
 
@@ -26,3 +26,15 @@ I can ensure no one is updating that user and related transaction.
 ### Added retry mechanism
 
 There is a while loop to retry locking if the resource is being locked already.
+This way I can ensure that updating user balance and adding new different transaction
+can be processed succsefully after the lock has been released.
+
+
+## Further improvements
+
+1. Cover with tests
+2. Add api docs
+3. Add api authentication
+4. Improve validations
+5. Add Makefile
+6. Adjust logger
